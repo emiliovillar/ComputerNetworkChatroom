@@ -1,32 +1,42 @@
-# client.py
-
 import socket
+import threading
 from constants import SERVER_HOST, SERVER_PORT
 from transport import TransportPacket
 
+def receive_messages(sock):
+    while True:
+        try:
+            data, _ = sock.recvfrom(4096)
+            msg = data.decode('utf-8', errors='ignore')
+            print(f"\n{msg}\n> ", end="", flush=True)
+        except:
+            break
+
 def main():
-    # define the target server address
-    server_address = ('127.0.0.1', SERVER_PORT)
+    server_address = (SERVER_HOST, SERVER_PORT)
+    seq = 1
 
-    # create a new UDP socket
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        # define the message and encode it into bytes
-        message = "hello, this is a test packet!"
-        payload = message.encode('utf-8')
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print(f"✅ Connected to server at {SERVER_HOST}:{SERVER_PORT}")
+    print("Type: JOIN <room>, LEAVE <room>, MSG <room> <text>, SHUTDOWN, or exit\n")
 
-        # create a packet object with the payload
-        packet_to_send = TransportPacket(seq=1, payload=payload)
-        
-        print("Packet to send:")
-        print(packet_to_send)
+    # Background thread to listen for incoming messages
+    threading.Thread(target=receive_messages, args=(sock,), daemon=True).start()
 
-        # serialize the packet object into bytes
-        packed_data = packet_to_send.pack()
+    while True:
+        user_input = input("> ").strip()
+        if not user_input:
+            continue
+        if user_input.lower() in {"exit", "quit"}:
+            print("Client exiting.")
+            break
 
-        # send the bytes to the server's address
-        sock.sendto(packed_data, server_address)
-        
-        print(f"\nSent {len(packed_data)} bytes to {server_address}")
+        payload = user_input.encode('utf-8')
+        packet = TransportPacket(seq=seq, payload=payload)
+        sock.sendto(packet.pack(), server_address)
+        seq += 1
+
+    sock.close()
 
 if __name__ == "__main__":
     main()
