@@ -1,33 +1,76 @@
-# server.py
-
 import socket
-from constants import SERVER_HOST, SERVER_PORT, BUFFER_SIZE
+from collections import defaultdict
+from constants import SERVER_BIND, SERVER_PORT
 from transport import TransportPacket
 
 def main():
-    # create a new UDP socket
+    # Track room membership: room_name -> set of (ip, port)
+    rooms = defaultdict(set)
+
+    # Create UDP socket and bind
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        # bind the socket to a public host and port
-        sock.bind((SERVER_HOST, SERVER_PORT))
-        print(f"✅ Server listening on {SERVER_HOST}:{SERVER_PORT}")
+        sock.bind((SERVER_BIND, SERVER_PORT))
+        print(f"✅ Server listening on {SERVER_BIND}:{SERVER_PORT}\n")
 
-        print("\nWaiting to receive a packet...")
-        
-        # block execution until data is received
-        # data contains the bytes, addr contains the source (ip, port)
-        data, addr = sock.recvfrom(BUFFER_SIZE)
-        
-        print(f"Received {len(data)} bytes from {addr}")
+        while True:
+            try:
+                print("Waiting to receive a packet...")
+                data, addr = sock.recvfrom(4096)
+                packet = TransportPacket.unpack(data)
+                msg = packet.payload.decode('utf-8').strip()
 
-        # attempt to parse the received bytes into a packet object
+                print(f"Received from {addr}: {msg}")
+
+                # Parse command
+                parts = msg.split(" ", 2)
+                cmd = parts[0].upper()
+
+                if cmd == "JOIN" and len(parts) >= 2:
+                    room = parts[1]
+                    rooms[room].add(addr)
+                    notice = f"[presence] {addr} joined {room}"
+                    print(notice)
+                    broadcast(sock, rooms[room], notice.encode(), exclude=None)
+
+                elif cmd == "LEAVE" and len(parts) >= 2:
+                    room = parts[1]
+                    if addr in rooms[room]:
+                        rooms[room].remove(addr)
+                        notice = f"[presence] {addr} left {room}"
+                        print(notice)
+                        broadcast(sock, rooms[room], notice.encode(), exclude=None)
+
+                elif cmd == "MSG" and len(parts) >= 3:
+                    room, text = parts[1], parts[2]
+                    if addr in rooms[room]:
+                        full_msg = f"[{room}] {addr}: {text}"
+                        broadcast(sock, rooms[room], full_msg.encode(), exclude=None)
+                    else:
+                        warn = f"You are not in {room}. Use JOIN {room} first."
+                        sock.sendto(warn.encode(), addr)
+
+                elif cmd == "SHUTDOWN":
+                    print("🛑 Shutdown command received. Exiting server.")
+                    break
+
+                else:
+                    sock.sendto(b"Invalid command.", addr)
+
+            except KeyboardInterrupt:
+                print("\n🛑 Server interrupted manually.")
+                break
+            except Exception as e:
+                print(f"Error: {e}")
+
+def broadcast(sock, members, data, exclude=None):
+    """Send data to all members in a room."""
+    for m in members:
+        if exclude and m == exclude:
+            continue
         try:
-            received_packet = TransportPacket.unpack(data)
-            print("Successfully unpacked packet:")
-            print(received_packet)
-        except ValueError as e:
-            print(f"Error unpacking packet: {e}")
-
-    print("\nServer shutting down.")
+            sock.sendto(data, m)
+        except Exception as e:
+            print(f"Failed to send to {m}: {e}")
 
 if __name__ == "__main__":
     main()
