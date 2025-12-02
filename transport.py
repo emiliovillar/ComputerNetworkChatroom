@@ -61,3 +61,54 @@ class TransportPacket:
             f"TransportPacket(seq={self.seq}, ack={self.ack}, "
             f"flags={bin(self.flags)}, len={self.len}, payload='{payload_str}')"
         )
+
+
+class Transport:
+    """Transport layer with metrics instrumentation."""
+
+    def __init__(self, sock):
+        self.sock = sock
+        self.total_packets_sent = 0
+        self.total_packets_received = 0
+        self.total_payload_bytes_sent = 0
+        self.total_payload_bytes_delivered_to_app = 0
+        self.total_packets_retransmitted = 0
+        self.total_retransmitted_bytes = 0
+        self.out_of_order_packets = 0
+
+    def send(self, packet, addr):
+        """Send packet and update metrics."""
+        data = packet.pack()
+        self.sock.sendto(data, addr)
+        self.total_packets_sent += 1
+        self.total_payload_bytes_sent += len(packet.payload)
+
+    def recv(self, bufsize=4096):
+        """Receive packet and update metrics."""
+        data, addr = self.sock.recvfrom(bufsize)
+        packet = TransportPacket.unpack(data)
+        self.total_packets_received += 1
+        self.total_payload_bytes_delivered_to_app += len(packet.payload)
+        return packet, addr
+
+    def reset_metrics(self):
+        """Reset all metrics counters to zero."""
+        self.total_packets_sent = 0
+        self.total_packets_received = 0
+        self.total_payload_bytes_sent = 0
+        self.total_payload_bytes_delivered_to_app = 0
+        self.total_packets_retransmitted = 0
+        self.total_retransmitted_bytes = 0
+        self.out_of_order_packets = 0
+
+    def get_metrics(self):
+        """Return all metrics as a dictionary."""
+        return {
+            'total_packets_sent': self.total_packets_sent,
+            'total_packets_received': self.total_packets_received,
+            'total_payload_bytes_sent': self.total_payload_bytes_sent,
+            'total_payload_bytes_delivered_to_app': self.total_payload_bytes_delivered_to_app,
+            'total_packets_retransmitted': self.total_packets_retransmitted,
+            'total_retransmitted_bytes': self.total_retransmitted_bytes,
+            'out_of_order_packets': self.out_of_order_packets
+        }
