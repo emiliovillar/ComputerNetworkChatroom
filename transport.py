@@ -301,8 +301,10 @@ class TransportConnection:
             duration = m["end_time"] - m["start_time"]
 
         goodput_bps = None
+        goodput_msg_sec = None
         if duration:
             goodput_bps = (m["bytes_delivered"] * 8.0) / duration
+            goodput_msg_sec = m["messages_delivered"] / duration
 
         avg_rtt = None
         p95_rtt = None
@@ -319,6 +321,7 @@ class TransportConnection:
             **m,
             "duration_sec": duration,
             "goodput_bps": goodput_bps,
+            "goodput_msg_sec": goodput_msg_sec,
             "avg_rtt_sec": avg_rtt,
             "p95_rtt_sec": p95_rtt,
             "retransmissions_per_kb": retrans_per_kb,
