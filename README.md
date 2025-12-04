@@ -210,18 +210,6 @@ python client.py --name Alice --server 192.168.1.100 --port 12345
 
 ---
 
-### **Transport Layer Verification**
-
-Run the transport demo:
-```bash
-python test_transport.py
-```
-
-Expected output shows:
-- Successful handshake with conn_id
-- All 5 messages delivered reliably
-- Flow control windows displayed
-- Clean connection teardown
 
 ---
 
@@ -335,4 +323,6 @@ After all these tests, here's what we demonstrated:
 - **Production Ready:** The chat application is stable with multiple concurrent clients and handles real-world usage patterns
 
 
-
+### AI Citation
+Gemini 3.0 Pro 
+ChatGPT 2.5 Flash
