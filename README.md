@@ -130,37 +130,33 @@ conn.close()  # Send FIN and cleanup
 
 ---
 
-## 6. Remaining Work
+## 6. Performance Evaluation
 
-### **Critical (Required for Completion):**
+### 6.1 Test Setup
 
-1. **Metrics Collection System:**
-   - Throughput (goodput) measurement
-   - Average and 95th percentile latency
-   - Retransmissions per KB tracking
-   - Out-of-order packet counting
-   - Add metrics API to TransportConnection class
+All performance measurements were taken using the `test_transport.py` script on a single machine:
 
-2. **Network Loss Testing:**
-   - Clean profile (0% loss) - baseline performance
-   - Random loss profile (5-10%)
-   - Bursty loss profile (8-12%)
-   - Document performance under each condition
+- Host: localhost (`127.0.0.1`)
+- Transport: custom Go-Back-N over UDP
+- Payload: 5 application messages of the form `"Hello 0" ... "Hello 4"` (7 bytes each, 35 bytes total)
+- Metrics collected via `TransportConnection.get_metrics()` on both client (sender) and server (receiver)
 
-3. **Additional Testing:**
-   - Test with 3+ concurrent clients
-   - Long-duration stability testing
-   - Stress testing with rapid message sending
+For clarity:
 
-### **Optional Improvements:**
-
-- Remove debug logging for production
-- Adaptive timeout calculation (currently fixed at 0.5s)
-- Better error recovery mechanisms
-- Performance optimizations
-- Proper logging framework
+- **Client metrics** focus on sending behavior (RTT, retransmissions, bytes sent).
+- **Server metrics** focus on delivery to the application (bytes delivered, goodput, out-of-order packets).
 
 ---
+
+### 6.2 Network Loss Testing
+
+We evaluated the protocol under three network profiles using the built-in loss simulator:
+
+- **Clean** – 0% loss
+- **Random** – ~5–10% independent packet loss (configured ≈ 8% for these tests)
+- **Bursty** – bursty loss with short high-loss bursts separated by mostly clean periods
+
+
 
 ## 7. How to Run
 
