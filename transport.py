@@ -6,7 +6,7 @@ import struct
 from constants import HEADER_FORMAT, HEADER_LEN, ACK, SYN, FIN
 
 # Loss simulation (for testing)
-LOSS_PROFILE = "bursty"  # "clean", "random", or "bursty"
+LOSS_PROFILE = "clean"  # "clean", "random", or "bursty"
 
 
 RANDOM_LOSS_PROB = 0.08
