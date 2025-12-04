@@ -179,7 +179,14 @@ conn.send_msg(f"MSG {room} {text}".encode())
 - `exit/quit` - Disconnect gracefully
 
 ---
+### **Start server**
 
+
+```bash
+# server.py file
+python server.py
+
+```
 
 
 
