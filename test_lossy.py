@@ -105,14 +105,7 @@ def main():
     # Test 3: Bursty loss
     run_test("BURSTY LOSS", "bursty")
     
-    print("\n" + "="*60)
-    print("DEMO COMPLETE")
-    print("="*60)
-    print("\nKey observations:")
-    print("  • All messages delivered reliably despite packet loss")
-    print("  • Retransmissions increase with loss rate")
-    print("  • RTT and throughput affected by loss conditions")
-    print("  • Go-Back-N ensures in-order, reliable delivery")
+    
 
 if __name__ == "__main__":
     main()
