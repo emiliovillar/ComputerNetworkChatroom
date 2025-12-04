@@ -78,8 +78,8 @@ def run_test(profile_name, profile_value):
         print(f"Average RTT: {client_metrics['avg_rtt_sec']*1000:.2f} ms")
         print(f"95th percentile RTT: {client_metrics['p95_rtt_sec']*1000:.2f} ms")
     
-    if server_metrics['goodput_bps'] is not None:
-        print(f"Goodput: {server_metrics['goodput_bps']:.2f} bits/sec")
+    if server_metrics['goodput_msg_sec'] is not None:
+        print(f"Goodput: {server_metrics['goodput_msg_sec']:.2f} messages/sec")
     
     # Restore original profile
     transport.LOSS_PROFILE = original_profile
