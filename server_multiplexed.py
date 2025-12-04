@@ -43,10 +43,11 @@ def handle_client_message(conn_id, data):
         if not client:
             return
             
-        print(f"[{client_names.get(conn_id, client.addr)}] {msg}")
+        print(f"[{client_names.get(conn_id, client.addr)}] Received: {msg}")
         
         parts = msg.split(" ", 2)
         cmd = parts[0].upper()
+        print(f"[DEBUG] Parsed command: '{cmd}', parts: {parts}")
         
         if cmd == "JOIN" and len(parts) >= 2:
             room = parts[1]
@@ -145,9 +146,15 @@ def handle_data_packet(pkt, addr):
     if not client or not client.connected:
         return
     
-    if pkt.payload and pkt.seq == client.expected_seq:
-        client.expected_seq += 1
-        handle_client_message(conn_id, pkt.payload)
+    if pkt.payload:
+        if pkt.seq == client.expected_seq:
+            client.expected_seq += 1
+            handle_client_message(conn_id, pkt.payload)
+        elif pkt.seq < client.expected_seq:
+            pass
+        else:
+            pass
+    
     ack_pkt = TransportPacket(
         seq=0,
         ack=client.expected_seq,
