@@ -43,11 +43,8 @@ def handle_client_message(conn_id, data):
         if not client:
             return
             
-        print(f"[{client_names.get(conn_id, client.addr)}] Received: {msg}")
-        
         parts = msg.split(" ", 2)
         cmd = parts[0].upper()
-        print(f"[DEBUG] Parsed command: '{cmd}', parts: {parts}")
         
         if cmd == "JOIN" and len(parts) >= 2:
             room = parts[1]

@@ -172,7 +172,7 @@ conn.close()  # Send FIN and cleanup
 
 Use the multiplexed server (recommended):
 ```bash
-python server_multiplexed.py
+python3 server_multiplexed.py
 ```
 
 Server will start on `0.0.0.0:12345` and display:
@@ -186,15 +186,15 @@ Press Ctrl+C to stop.
 In separate terminals:
 ```bash
 # Client 1 (Alice)
-python client.py --name Alice
+python3 client.py --name Alice
 
 # Client 2 (Bob)
-python client.py --name Bob
+python3 client.py --name Bob
 ```
 
 For remote connections:
 ```bash
-python client.py --name Alice --server 192.168.1.100 --port 12345
+python3 client.py --name Alice --server 192.168.1.100 --port 12345
 ```
 
 ### **Using the Chat**
@@ -203,6 +203,7 @@ python client.py --name Alice --server 192.168.1.100 --port 12345
 > JOIN lobby
 > MSG lobby Hello everyone!
 > LEAVE lobby
+> METRICS
 > exit
 ```
 

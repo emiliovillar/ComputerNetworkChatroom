@@ -342,20 +342,20 @@ class TransportConnection:
         if m["start_time"] is not None and m["end_time"] is not None and m["end_time"] > m["start_time"]:
             duration = m["end_time"] - m["start_time"]
 
-        goodput_bps = None
-        if duration and duration > 0:
-            # Goodput = delivered payload bits / second
-            goodput_bps = (m["bytes_delivered"] * 8.0) / duration
+        goodput_msg_per_sec = None
+        if duration and duration > 0 and m["messages_delivered"] > 0:
+            goodput_msg_per_sec = m["messages_delivered"] / duration
 
-        avg_rtt = None
-        p95_rtt = None
+        avg_rtt_ms = None
+        p95_rtt_ms = None
         if rtts:
             rtts_sorted = sorted(rtts)
-            avg_rtt = sum(rtts_sorted) / len(rtts_sorted)
+            avg_rtt_sec = sum(rtts_sorted) / len(rtts_sorted)
+            avg_rtt_ms = avg_rtt_sec * 1000.0
             idx = int(0.95 * len(rtts_sorted)) - 1
             if idx < 0:
                 idx = 0
-            p95_rtt = rtts_sorted[idx]
+            p95_rtt_ms = rtts_sorted[idx] * 1000.0
 
         retrans_per_kb = None
         if m["bytes_sent"] > 0:
@@ -366,9 +366,9 @@ class TransportConnection:
         return {
             **m,
             "duration_sec": duration,
-            "goodput_bps": goodput_bps,
-            "avg_rtt_sec": avg_rtt,
-            "p95_rtt_sec": p95_rtt,
+            "goodput_msg_per_sec": goodput_msg_per_sec,
+            "avg_rtt_ms": avg_rtt_ms,
+            "p95_rtt_ms": p95_rtt_ms,
             "retransmissions_per_kb": retrans_per_kb,
         }
 
