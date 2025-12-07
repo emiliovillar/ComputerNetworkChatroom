@@ -32,11 +32,19 @@ def main():
         print(f"❌ Failed: {e}")
         return
     
-    # Set display name on server
-    conn.send_msg(f"NAME {args.name}".encode())
-    time.sleep(0.1)
+    # Login with username (required for new features)
+    print(f"Logging in as '{args.name}'...")
+    conn.send_msg(f"LOGIN {args.name}".encode())
+    time.sleep(0.2)  # Wait for login confirmation
     
-    print("\nCommands: JOIN <room>, LEAVE <room>, MSG <room> <text>, exit\n")
+    print("\nCommands:")
+    print("  LOGIN <username>  - Login with unique username (required)")
+    print("  LOGOUT            - Logout")
+    print("  JOIN <room>       - Join a chat room")
+    print("  LEAVE <room>      - Leave a room")
+    print("  MSG <room> <text> - Send message to room")
+    print("  DM <user> <text>  - Send private message to user")
+    print("  exit/quit         - Disconnect\n")
     
     # Main input loop
     try:
