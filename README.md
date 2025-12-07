@@ -172,14 +172,52 @@ conn.send_msg(f"MSG {room} {text}".encode())
 ```
 
 ### **Chat Protocol Commands**
-- `NAME <name>` - Set display name
-- `JOIN <room>` - Join a chat room
+
+**Authentication:**
+- `LOGIN <username>` - Login with a unique username (required for most commands)
+- `LOGOUT` - Logout from the server
+
+**Room Management:**
+- `JOIN <room>` - Join a chat room (receives last N messages automatically)
 - `LEAVE <room>` - Leave a room
-- `MSG <room> <text>` - Send message to room members
+
+**Messaging:**
+- `MSG <room> <text>` - Send message to all members in a room
+- `DM <user> <text>` - Send private direct message to a specific user
+
+**Legacy:**
+- `NAME <name>` - Set display name (backward compatibility, use LOGIN instead)
 - `exit/quit` - Disconnect gracefully
 
----
+### **Bonus Features**
 
+**1. Message History**
+- When a client joins a room, they automatically receive the last 50 messages from that room
+- Messages are stored per room and delivered before presence notifications
+
+**2. Private Messages (DM)**
+- Use `DM <username> <text>` to send direct messages that bypass room broadcasts
+- Only works with logged-in users (must use LOGIN first)
+- Both sender and recipient receive confirmation of the message
+
+**3. Priority Messages**
+- Presence updates (JOIN/LEAVE notifications) are delivered before regular chat messages
+- Ensures users see who joined/left before seeing chat messages
+
+**4. Persistent Usernames**
+- Users must `LOGIN <username>` with a unique username before using most commands
+- Usernames are validated for uniqueness across all connected clients
+- Use `LOGOUT` to disconnect your username (allows re-login with different name)
+
+---
+### **Start server**
+
+
+```bash
+# server.py file
+python server.py
+
+```
 
 
 
@@ -201,11 +239,46 @@ python client.py --name Alice --server 192.168.1.100 --port 12345
 
 ### **Using the Chat**
 
+**Basic Usage:**
 ```
+> LOGIN Alice
+Logged in as 'Alice'. Welcome!
+
 > JOIN lobby
+[history] Last 5 messages in lobby:
+[lobby] Bob: Hello!
+[lobby] Charlie: Hi there!
+[presence] Alice joined lobby
+
 > MSG lobby Hello everyone!
+[lobby] Alice: Hello everyone!
+
+> DM Bob Hey, private message!
+[DM to Bob] Hey, private message!
+
 > LEAVE lobby
+[presence] Alice left lobby
+
+> LOGOUT
+Logged out successfully.
+
 > exit
+```
+
+**Example with Multiple Users:**
+```
+# Terminal 1 (Alice)
+> LOGIN Alice
+> JOIN general
+> MSG general Hi Bob!
+
+# Terminal 2 (Bob)  
+> LOGIN Bob
+> JOIN general
+[history] Last 1 messages in general:
+[general] Alice: Hi Bob!
+[presence] Bob joined general
+> DM Alice Hi back!
 ```
 
 ---
